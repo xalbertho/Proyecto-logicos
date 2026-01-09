@@ -4,6 +4,9 @@
 # defaults
 SIM ?= icarus
 FST ?= -fst # Use more efficient FST format
+
+
+
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(PWD)/../src
 PROJECT_SOURCES = \
@@ -13,8 +16,7 @@ PROJECT_SOURCES = \
   bin8_to_bcd3.v \
   sevenseg_mux4_ca.v \
   sevenseg_decoder_ca.v
- 
-  
+
 
 ifneq ($(GATES),yes)
 
@@ -40,8 +42,7 @@ VERILOG_SOURCES += $(PWD)/gate_level_netlist.v
 endif
 
 # Allow sharing configuration between design and testbench via `include`:
-
-COMPILE_ARGS += -DSIM
+COMPILE_ARGS 		+= -I$(SRC_DIR)
 
 # Include the testbench sources:
 VERILOG_SOURCES += $(PWD)/tb.v

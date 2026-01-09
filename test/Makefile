@@ -6,7 +6,7 @@ SIM ?= icarus
 FST ?= -fst # Use more efficient FST format
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(PWD)/../src
-PROJECT_SOURCES =\
+PROJECT_SOURCES = \
   tt_um_alberto_counter255_7seg.v \
   tld_contador_0_255_ca.v \
   counter8_4hz.v \

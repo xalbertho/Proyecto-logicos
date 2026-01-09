@@ -1,40 +1,38 @@
-# SPDX-FileCopyrightText: © 2024 Tiny Tapeout
-# SPDX-License-Identifier: Apache-2.0
-
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles
+from cocotb.triggers import ClockCycles, Timer
 
+def resolvible(v) -> bool:
+    # Evita X/Z
+    s = v.binstr.lower()
+    return ('x' not in s) and ('z' not in s)
 
 @cocotb.test()
 async def test_project(dut):
     dut._log.info("Start")
 
-    # Set the clock period to 10 us (100 KHz)
-    clock = Clock(dut.clk, 20, unit="us")
-    cocotb.start_soon(clock.start())
+    # 50 MHz => 20 ns
+    cocotb.start_soon(Clock(dut.clk, 20, unit="ns").start())
 
-    # Reset
-    dut._log.info("Reset")
+    # Valores iniciales
     dut.ena.value = 1
-    dut.ui_in.value = 0
+    dut.ui_in.value = 0      # ui_in[0]=0 (si lo usas como reset-boton)
     dut.uio_in.value = 0
     dut.rst_n.value = 0
-    await ClockCycles(dut.clk, 10)
+
+    # Reset algunos ciclos
+    await ClockCycles(dut.clk, 20)
     dut.rst_n.value = 1
+    await ClockCycles(dut.clk, 20)
 
-    dut._log.info("Test project behavior")
+    dut._log.info("Smoke test: uo_out resolvible y cambia")
 
-    # Set the input values you want to test
-    dut.ui_in.value = 20
-    dut.uio_in.value = 30
+    v0 = dut.uo_out.value
+    assert resolvible(v0), f"uo_out tiene X/Z al salir de reset: {v0.binstr}"
 
-    # Wait for one clock cycle to see the output values
-    await ClockCycles(dut.clk, 1)
+    # Espera un poco: si tu diseño es MUY lento, esto puede no cambiar
+    await Timer(200_000, units="ns")  # 200 us
 
-    # The following assersion is just an example of how to check the output values.
-    # Change it to match the actual expected output of your module:
-    assert dut.uo_out.value == 50
-
-    # Keep testing the module by changing the input values, waiting for
-    # one or more clock cycles, and asserting the expected output values.
+    v1 = dut.uo_out.value
+    assert resolvible(v1), f"uo_out tiene X/Z después: {v1.binstr}"
+    assert v1 != v0, f"uo_out no cambió (posible divisor enorme o reset/ena). v0={v0.binstr} v1={v1.binstr}"

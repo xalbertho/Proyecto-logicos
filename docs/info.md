@@ -1,20 +1,25 @@
-<!---
+# Tiny Tapeout project information
 
-This file is used to generate your project datasheet. Please fill in the information below and delete any unused
-sections.
-
-You can also include images in this folder and reference them in the markdown. Each image must be less than
-512 kb in size, and the combined size of all images must be less than 1 MB.
--->
+## Proyecto: Contador 0–255 con 7 segmentos (CA)
 
 ## How it works
+Este diseño implementa un contador de 8 bits que incrementa de 0 a 255 y regresa a 0.
+El valor se convierte a BCD (centenas, decenas y unidades) con el algoritmo “double dabble” y se muestra en un display de 7 segmentos multiplexado.
+El multiplexado recorre 4 dígitos (miles/centenas/decenas/unidades), aunque miles se fija en 0.
 
-Explain how your project works
+- `counter8_4hz`: divide el reloj para incrementar a ~4 Hz (según `F_CLK_HZ`).
+- `bin8_to_bcd3`: convierte 8-bit binario a 3 dígitos BCD.
+- `sevenseg_mux4_ca`: multiplexa los 4 dígitos y usa `sevenseg_decoder_ca` para generar `seg`.
+
+Reset:
+- `rst_n` es activo-bajo. Al reset, el contador y el multiplex regresan a estado inicial.
 
 ## How to test
+1) Simulación (opcional):
+   - Aplica `rst_n=0` unos ciclos y luego `rst_n=1`.
+   - Verifica que `count_8b` incremente y que `seg/an` cambien con el multiplexado.
 
-Explain how to use your project
-
-## External hardware
-
-List external hardware used in your project (e.g. PMOD, LED display, etc), if any
+2) En hardware / demo:
+   - Configura el clock al valor usado en el parámetro `F_CLK_HZ`.
+   - Observa que el valor muestre 000–255 (BCD) y que al llegar a 255 regrese a 000.
+   - Presiona el reset (activo en bajo) y confirma que vuelva a 000.
